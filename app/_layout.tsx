@@ -19,6 +19,7 @@ export default function RootLayout() {
     await Font.loadAsync({
       TitleFont: require("@/assets/fonts/FugazOne-Regular.ttf"),
       BaseFont: require("@/assets/fonts/CreatoDisplay-Bold.otf"),
+      BaseItalic: require("@/assets/fonts/CreatoDisplay-BoldItalic.otf"),
       BoldFont: require("@/assets/fonts/CreatoDisplay-ExtraBold.otf"),
       BlackFont: require("@/assets/fonts/CreatoDisplay-BlackItalic.otf"),
     });
@@ -61,6 +62,7 @@ export default function RootLayout() {
       />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="chat" />
       </Stack>
     </View>
   );

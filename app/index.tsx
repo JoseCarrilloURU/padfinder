@@ -53,7 +53,7 @@ export default function Index() {
   const color3 = "lightgreen";
   const color4 = "green";
   const color5 = "#fff";
-  const color6 = "#bbb";
+  const color6 = "#bcf";
   const leftColor = useSharedValue(color2);
   const rightColor = useSharedValue(color1);
 
@@ -72,7 +72,7 @@ export default function Index() {
 
   const handleLoginPressed = () => {
     console.log("Login Pressed");
-    // PUSH A TABS
+    router.push("/(tabs)/discover");
   };
   const handleGoToRegister = () => {
     console.log("Go to Register Pressed");
@@ -881,7 +881,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     top: -2.5,
     left: 43,
-    width: 240,
+    width: 250,
     height: 50,
     zIndex: 5,
     borderWidth: 0,
