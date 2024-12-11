@@ -11,10 +11,18 @@ import { router } from "expo-router";
 import AnimatedButton from "@/components/AnimatedButton";
 import { AnimatePresence } from "moti";
 
-const Header = () => {
+interface HeaderProps {
+  originTab: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ originTab }) => {
   const handleLogOut = () => {
     console.log("Log out Pressed");
     router.navigate("/");
+  };
+  const handleGoBack = () => {
+    console.log("Go Back Pressed");
+    router.back();
   };
 
   return (
@@ -43,18 +51,34 @@ const Header = () => {
         }}
       />
       <View style={{ zIndex: 105 }}>
-        <AnimatedButton
-          onPress={handleLogOut}
-          disabled={false}
-          source={require("@/assets/images/app/LogOut.png")}
-          style={{
-            position: "absolute",
-            top: 38,
-            left: 15,
-            width: 97,
-            height: 52,
-          }}
-        />
+        {originTab === 0 && (
+          <AnimatedButton
+            onPress={handleLogOut}
+            disabled={false}
+            source={require("@/assets/images/app/LogOut.png")}
+            style={{
+              position: "absolute",
+              top: 37,
+              left: 15,
+              width: 113,
+              height: 50,
+            }}
+          />
+        )}
+        {originTab == 1 && (
+          <AnimatedButton
+            onPress={handleGoBack}
+            disabled={false}
+            source={require("@/assets/images/app/GoBack.png")}
+            style={{
+              position: "absolute",
+              top: 42,
+              left: 11,
+              width: 120,
+              height: 37,
+            }}
+          />
+        )}
       </View>
     </View>
   );

@@ -158,7 +158,7 @@ export default function Socials() {
       <View style={{ position: "absolute", top: 120 }}>
         <IconsBG />
       </View>
-      <Header />
+      <Header originTab={0} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <Image
           source={require("@/assets/images/app/chattitle.png")}

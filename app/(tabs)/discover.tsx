@@ -117,7 +117,7 @@ export default function Discover() {
       <View style={{ position: "absolute", top: 120 }}>
         <IconsBG />
       </View>
-      <Header />
+      <Header originTab={0} />
       <AnimatedButton
         onPress={handleSwipeLeft}
         disabled={false}

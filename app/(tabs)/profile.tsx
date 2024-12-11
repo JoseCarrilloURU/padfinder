@@ -18,7 +18,7 @@ import {
   vec,
 } from "@shopify/react-native-skia";
 import IconsBG from "@/components/iconsBG";
-import { MotiView, MotiImage, MotiText, ScrollView } from "moti";
+import { MotiView, MotiImage, MotiText } from "moti";
 import Animated, {
   useSharedValue,
   useDerivedValue,
@@ -77,7 +77,7 @@ export default function Profile() {
       <View style={{ position: "absolute", top: 120 }}>
         <IconsBG />
       </View>
-      <Header />
+      <Header originTab={0} />
       <BlurView intensity={60} tint="light" style={profilestyles.blurcard} />
     </View>
   );
