@@ -95,6 +95,8 @@ export default function Socials() {
 
   const handleChatPress = (chat_id: string, name: string, url: string) => {
     console.log('Chat Pressed', chat_id);
+    console.log('Usuario actualmente Logueado', user?.id);
+
     setChatId(chat_id);
     setChatInfo({ name, url });
     router.push('/chat');
@@ -116,10 +118,9 @@ export default function Socials() {
             id: index,
             chat_id: chat._id,
             name: chat.users[0].username,
-            age: chat.users[0].person_id.age,
+            age: chat.users[0].person_id.age ?? 22,
             gender: chat.users[0].person_id.genre.description,
-            lastMessage:
-              chat.lastMessage.description || chat.lastMessage.type_message,
+            lastMessage: chat.lastMessage.description || 'sin mensajes',
             imageUrl: `${BASE_URL}user/image?id=${chat.users[0]._id}`,
           })) || [];
         setChats(mappedChats);
@@ -127,7 +128,7 @@ export default function Socials() {
     };
 
     fetchChats();
-  }, []);
+  }, [user]);
 
   const getHeaders = () => {
     return {

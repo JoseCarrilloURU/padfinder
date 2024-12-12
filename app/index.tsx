@@ -119,8 +119,7 @@ export default function Index() {
         person_id: response.data?.user.person_id,
         name: response.data?.user.username,
       });
-      console.log("Luego de ejeuctar la respuesta todo bien");
-      router.push("/(tabs)/discover");
+      router.push('/(tabs)/discover');
       useConnectSocket(WS_BASE_URL, response.data?.user._id ?? "");
     }
     setEmail("");
