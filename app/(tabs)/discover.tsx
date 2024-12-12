@@ -51,7 +51,7 @@ const mockData = [
     age: 20,
     gender: "Femenino",
     username: "andrea.perez",
-    exp: "Principiante (0 a 6 meses)",
+    exp: "P",
   },
   {
     id: 2,
@@ -59,7 +59,7 @@ const mockData = [
     age: 20,
     gender: "Masculino",
     username: "elpecuca",
-    exp: "Intermedio (7 a 11 meses)",
+    exp: "I",
   },
   {
     id: 3,
@@ -67,7 +67,7 @@ const mockData = [
     age: 25,
     gender: "Masculino",
     username: "mgur",
-    exp: "Avanzado (Más de 1 año)",
+    exp: "V",
   },
   {
     id: 4,
@@ -75,7 +75,7 @@ const mockData = [
     age: 21,
     gender: "Masculino",
     username: "garayyy",
-    exp: "Intermedio (7 a 11 meses)",
+    exp: "I",
   },
   {
     id: 5,
@@ -83,7 +83,7 @@ const mockData = [
     age: 19,
     gender: "Femenino",
     username: "elatla",
-    exp: "Principiante (0 a 6 meses)",
+    exp: "P",
   },
   {
     id: 6,
@@ -91,7 +91,7 @@ const mockData = [
     age: 27,
     gender: "Masculino",
     username: "ansaun",
-    exp: "Avanzado (Más de 1 año)",
+    exp: "V",
   },
 ];
 
@@ -136,15 +136,19 @@ export default function Discover() {
         ? require("@/assets/images/app/M.png")
         : require("@/assets/images/app/F.png");
 
+    const expImage =
+      exp === "P"
+        ? require("@/assets/images/app/P.png")
+        : exp === "I"
+        ? require("@/assets/images/app/I.png")
+        : require("@/assets/images/app/V.png");
+
     return (
       <View style={swipestyles.itemContainer}>
         <View style={swipestyles.card} />
         <Image source={backdropImageMap[id]} style={swipestyles.image} />
         <Image source={genderImage} style={swipestyles.gender} />
-        <Image
-          source={require("@/assets/images/app/P.png")}
-          style={swipestyles.exp}
-        />
+        <Image source={expImage} style={swipestyles.exp} />
         <Text style={swipestyles.name}>{name}</Text>
         <Text style={swipestyles.data}>@{username}</Text>
         <Text style={swipestyles.age}>{age} años</Text>
