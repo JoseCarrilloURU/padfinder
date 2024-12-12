@@ -151,7 +151,7 @@ export default function Socials() {
           style={socialstyles.blurcard}
         />
         <Image
-          source={{ uri: imageUrl, headers: getHeaders() }}
+          source={{ uri: imageUrl }}
           style={socialstyles.itemimage}
         />
         <Text
