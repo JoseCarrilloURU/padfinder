@@ -197,6 +197,36 @@ export default function First() {
           </View>
         </BlurView>
       </MotiView>
+      <Pressable onPress={handleM}>
+        <MotiImage
+          from={{
+            scale: 0.8,
+            opacity: 0.4,
+          }}
+          animate={gender === "m" ? { scale: 1.1, opacity: 1 } : {}}
+          transition={{
+            type: "timing",
+            duration: 800,
+          }}
+          source={require("@/assets/images/app/M.png")}
+          style={firststyles.genders}
+        />
+      </Pressable>
+      <Pressable onPress={handleF}>
+        <MotiImage
+          from={{
+            scale: 0.8,
+            opacity: 0.4,
+          }}
+          animate={gender === "f" ? { scale: 1.1, opacity: 1 } : {}}
+          transition={{
+            type: "timing",
+            duration: 800,
+          }}
+          source={require("@/assets/images/app/F.png")}
+          style={[firststyles.genders, { left: 205, height: 54 }]}
+        />
+      </Pressable>
       <MotiView style={{ position: "absolute", flex: 1 }}>
         <AnimatedButton
           onPress={handleStartPress}
@@ -210,6 +240,14 @@ export default function First() {
 }
 
 const firststyles = StyleSheet.create({
+  genders: {
+    position: "absolute",
+    width: 160,
+    height: 52,
+    left: 30,
+    top: 540,
+    zIndex: 106,
+  },
   mainbutton: {
     position: "absolute",
     top: 760,
