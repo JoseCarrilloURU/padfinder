@@ -62,6 +62,7 @@ export default function First() {
     return [color1, color2];
   }, []);
 
+  //! SELECCION DEL ARCHIVO
   const handlePictureSet = async () => {
     console.log('Picture Change Set');
     const permissionResult =
@@ -137,6 +138,7 @@ export default function First() {
     }
 
     if (picSet) {
+      //!ENDPOINT PARA UTILIZAR AL ACTUALIZAR
       const responseImage = await fetchWrapper(`${BASE_URL}user`, {
         method: 'PUT',
         token: token ?? '',
