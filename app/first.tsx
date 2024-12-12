@@ -141,9 +141,9 @@ export default function First() {
       </MotiView>
       <MotiView style={{ position: "absolute", flex: 1 }}>
         <BlurView
-          intensity={55}
+          intensity={0}
           tint="light"
-          style={[firststyles.blur, { top: 245 }]}
+          style={[firststyles.blur, { top: 210, boxShadow: "" }]}
         >
           <Text style={firststyles.texttitle}>Tu Apellido</Text>
           <View style={firststyles.textinputcontainer}>
@@ -170,9 +170,9 @@ export default function First() {
       </MotiView>
       <MotiView style={{ position: "absolute", flex: 1 }}>
         <BlurView
-          intensity={55}
+          intensity={0}
           tint="light"
-          style={[firststyles.blur, { top: 390 }]}
+          style={[firststyles.blur, { top: 320, boxShadow: "" }]}
         >
           <Text style={firststyles.texttitle}>Tu Edad</Text>
           <View style={firststyles.textinputcontainer}>
@@ -224,7 +224,52 @@ export default function First() {
             duration: 800,
           }}
           source={require("@/assets/images/app/F.png")}
-          style={[firststyles.genders, { left: 205, height: 54 }]}
+          style={[firststyles.genders, { left: 205, height: 55 }]}
+        />
+      </Pressable>
+      <Pressable onPress={handleP}>
+        <MotiImage
+          from={{
+            scale: 0.8,
+            opacity: 0.4,
+          }}
+          animate={exp === "p" ? { scale: 1, opacity: 1 } : {}}
+          transition={{
+            type: "timing",
+            duration: 800,
+          }}
+          source={require("@/assets/images/app/P.png")}
+          style={firststyles.exps}
+        />
+      </Pressable>
+      <Pressable onPress={handleI}>
+        <MotiImage
+          from={{
+            scale: 0.8,
+            opacity: 0.4,
+          }}
+          animate={exp === "i" ? { scale: 1, opacity: 1 } : {}}
+          transition={{
+            type: "timing",
+            duration: 800,
+          }}
+          source={require("@/assets/images/app/I.png")}
+          style={[firststyles.exps, { top: 668 }]}
+        />
+      </Pressable>
+      <Pressable onPress={handleV}>
+        <MotiImage
+          from={{
+            scale: 0.8,
+            opacity: 0.4,
+          }}
+          animate={exp === "v" ? { scale: 1, opacity: 1 } : {}}
+          transition={{
+            type: "timing",
+            duration: 800,
+          }}
+          source={require("@/assets/images/app/V.png")}
+          style={[firststyles.exps, { top: 718 }]}
         />
       </Pressable>
       <MotiView style={{ position: "absolute", flex: 1 }}>
@@ -240,17 +285,25 @@ export default function First() {
 }
 
 const firststyles = StyleSheet.create({
+  exps: {
+    position: "absolute",
+    width: 240,
+    height: 49,
+    left: 80,
+    top: 620,
+    zIndex: 106,
+  },
   genders: {
     position: "absolute",
     width: 160,
-    height: 52,
+    height: 53,
     left: 30,
-    top: 540,
+    top: 560,
     zIndex: 106,
   },
   mainbutton: {
     position: "absolute",
-    top: 760,
+    top: 768,
     left: 95,
     width: 200,
     height: 54,
@@ -271,7 +324,7 @@ const firststyles = StyleSheet.create({
   blur: {
     position: "absolute",
     width: 335,
-    height: 132,
+    height: 355,
     zIndex: 5,
     top: 100,
     left: 28,
