@@ -141,6 +141,7 @@ export default function First() {
         method: 'PUT',
         token: token ?? '',
         body: myFormData,
+        isFormData: true,
       });
       if (responseImage.data) {
         console.log('Se actualizo la imagen correctamente');
@@ -276,10 +277,13 @@ export default function First() {
           </View>
         </BlurView>
       </MotiView>
-      <Image style={firststyles.image} />
+      <Image
+        source={{ uri: `${BASE_URL}user/image?id=${user?.id}` }}
+        style={firststyles.image}
+      />
       <AnimatedButton
         onPress={handlePictureSet}
-        source={require("@/assets/images/app/ImgReplace.png")}
+        source={require('@/assets/images/app/ImgReplace.png')}
         style={firststyles.pictureset}
         disabled={false}
       />
