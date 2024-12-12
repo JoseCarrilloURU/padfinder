@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ originTab }) => {
         }}
       />
       <View style={{ zIndex: 105 }}>
-        {originTab === 0 && (
+        {originTab == 0 && (
           <AnimatedButton
             onPress={handleLogOut}
             disabled={false}

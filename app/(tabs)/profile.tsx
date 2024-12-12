@@ -106,11 +106,11 @@ export default function Profile() {
 
   const getExperienceRange = (months: number) => {
     if (months <= 6) {
-      return 'Principiante (0 a 6 meses)';
+      return "Principiante (0 a 6 meses)";
     } else if (months <= 11) {
-      return 'Intermedio (6 a 11 meses)';
+      return "Intermedio (6 a 11 meses)";
     } else {
-      return 'Avanzado (Más de 1 año)';
+      return "Avanzado (Más de 1 año)";
     }
   };
 

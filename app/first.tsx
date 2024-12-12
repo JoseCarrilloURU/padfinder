@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   Pressable,
   TextInput,
@@ -9,7 +9,7 @@ import {
   FlatList,
   useWindowDimensions,
   requireNativeComponent,
-} from 'react-native';
+} from "react-native";
 import {
   Canvas,
   Rect,
@@ -17,41 +17,41 @@ import {
   LinearGradient,
   RadialGradient,
   vec,
-} from '@shopify/react-native-skia';
-import IconsBG from '@/components/iconsBG';
-import { MotiView, MotiImage } from 'moti';
+} from "@shopify/react-native-skia";
+import IconsBG from "@/components/iconsBG";
+import { MotiView, MotiImage } from "moti";
 import Animated, {
   useSharedValue,
   useDerivedValue,
   withTiming,
   Easing,
-} from 'react-native-reanimated';
-import { router, SplashScreen } from 'expo-router';
-import FooterWaves from '@/components/footerWaves';
-import AnimatedButton from '@/components/AnimatedButton';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { playSound } from '@/components/soundUtils';
-import { BlurView } from 'expo-blur';
-import Header from '@/components/header';
-import { backdropImageMap } from '@/components/imageMaps';
+} from "react-native-reanimated";
+import { router, SplashScreen } from "expo-router";
+import FooterWaves from "@/components/footerWaves";
+import AnimatedButton from "@/components/AnimatedButton";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { playSound } from "@/components/soundUtils";
+import { BlurView } from "expo-blur";
+import Header from "@/components/header";
+import { backdropImageMap } from "@/components/imageMaps";
 
-import { useAuth } from './context/auth/authContext';
-import { fetchWrapper } from './services/wrapper';
-import { BASE_URL } from './constants';
-import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from "./context/auth/authContext";
+import { fetchWrapper } from "./services/wrapper";
+import { BASE_URL } from "./constants";
+import * as ImagePicker from "expo-image-picker";
 
 export default function First() {
   const { width, height } = useWindowDimensions();
   const appHeight = height + 30;
-  const color1 = '#87eaff';
-  const color2 = 'blue';
+  const color1 = "#87eaff";
+  const color2 = "blue";
 
-  const [name, setName] = useState('');
-  const [lastname, setLastname] = useState('');
-  const [age, setAge] = useState('');
+  const [name, setName] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [age, setAge] = useState("");
   const [picSet, setPicSet] = useState(false);
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState("");
   const [exp, setExp] = useState(0);
 
   const myFormData = new FormData();
@@ -64,12 +64,12 @@ export default function First() {
 
   //! SELECCION DEL ARCHIVO
   const handlePictureSet = async () => {
-    console.log('Picture Change Set');
+    console.log("Picture Change Set");
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permissionResult.granted === false) {
-      alert('Permiso requerido para acceder a la camara');
+      alert("Permiso requerido para acceder a la camara");
       return;
     }
 
@@ -83,44 +83,44 @@ export default function First() {
     if (!result.canceled) {
       const selectedImage = result.assets[0];
       const fileUri = selectedImage.uri;
-      myFormData.append('id', user?.id ?? '');
-      myFormData.append('image', {
+      myFormData.append("id", user?.id ?? "");
+      myFormData.append("image", {
         uri: fileUri,
-        name: selectedImage.fileName ?? 'photo',
-        type: selectedImage.mimeType ?? 'image/jpeg',
+        name: selectedImage.fileName ?? "photo",
+        type: selectedImage.mimeType ?? "image/jpeg",
       } as any);
       setPicSet(true);
     } else {
-      console.log('Se cancelo la seleccion');
+      console.log("Se cancelo la seleccion");
     }
   };
 
   const handleM = () => {
-    console.log('Masculino');
-    setGender('674ead65c96e62fd6ff0f7d9');
+    console.log("Masculino");
+    setGender("674ead65c96e62fd6ff0f7d9");
   };
   const handleF = () => {
-    console.log('Femenino');
-    setGender('674ead8000d8d5043923e17e');
+    console.log("Femenino");
+    setGender("674ead8000d8d5043923e17e");
   };
   const handleP = () => {
-    console.log('Principiante');
+    console.log("Principiante");
     setExp(3);
   };
   const handleI = () => {
-    console.log('Intermedio');
+    console.log("Intermedio");
     setExp(8);
   };
   const handleV = () => {
-    console.log('Veterano');
+    console.log("Veterano");
     setExp(13);
   };
 
   const handleStartPress = async () => {
-    console.log('Start pressed');
+    console.log("Start pressed");
     const response = await fetchWrapper(`${BASE_URL}person`, {
-      method: 'PUT',
-      token: token ?? '',
+      method: "PUT",
+      token: token ?? "",
       body: JSON.stringify({
         id: user?.person_id,
         age,
@@ -132,29 +132,29 @@ export default function First() {
     });
 
     if (response.data) {
-      console.log('Persona actualizado correctamente');
+      console.log("Persona actualizado correctamente");
     } else {
-      console.log('Hubo un error al actualizar la persona', response);
+      console.log("Hubo un error al actualizar la persona", response);
     }
 
     if (picSet) {
       //!ENDPOINT PARA UTILIZAR AL ACTUALIZAR
       const responseImage = await fetchWrapper(`${BASE_URL}user`, {
-        method: 'PUT',
-        token: token ?? '',
+        method: "PUT",
+        token: token ?? "",
         body: myFormData,
         isFormData: true,
       });
       if (responseImage.data) {
-        console.log('Se actualizo la imagen correctamente');
+        console.log("Se actualizo la imagen correctamente");
       } else {
-        console.log('Hubo un error al intentar actualizar la imagen', response);
+        console.log("Hubo un error al intentar actualizar la imagen", response);
       }
 
       setPicSet(false);
     }
 
-    // router.push('/(tabs)/discover');
+    router.push("/(tabs)/discover");
   };
 
   return (
@@ -162,19 +162,14 @@ export default function First() {
       <Canvas
         style={{
           flex: 1,
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           width: width,
           height: appHeight,
         }}
       >
-        <Rect
-          x={0}
-          y={0}
-          width={width}
-          height={appHeight}
-        >
+        <Rect x={0} y={0} width={width} height={appHeight}>
           <LinearGradient
             start={vec(0, 0)}
             end={vec(width, appHeight)}
@@ -182,22 +177,18 @@ export default function First() {
           />
         </Rect>
       </Canvas>
-      <View style={{ position: 'absolute', top: 120 }}>
+      <View style={{ position: "absolute", top: 120 }}>
         <IconsBG />
       </View>
 
-      <MotiView style={{ position: 'absolute', flex: 1 }}>
+      <MotiView style={{ position: "absolute", flex: 1 }}>
         <MotiImage
-          source={require('@/assets/images/app/firsttitle1.png')}
+          source={require("@/assets/images/app/firsttitle1.png")}
           style={firststyles.logintitle}
         />
       </MotiView>
-      <MotiView style={{ position: 'absolute', flex: 1 }}>
-        <BlurView
-          intensity={55}
-          tint="light"
-          style={firststyles.blur}
-        >
+      <MotiView style={{ position: "absolute", flex: 1 }}>
+        <BlurView intensity={55} tint="light" style={firststyles.blur}>
           <Text style={firststyles.texttitle}>Tu Nombre</Text>
           <View style={firststyles.textinputcontainer}>
             <MaterialCommunityIcons
@@ -221,11 +212,11 @@ export default function First() {
           </View>
         </BlurView>
       </MotiView>
-      <MotiView style={{ position: 'absolute', flex: 1 }}>
+      <MotiView style={{ position: "absolute", flex: 1 }}>
         <BlurView
           intensity={0}
           tint="light"
-          style={[firststyles.blur, { top: 210, boxShadow: '' }]}
+          style={[firststyles.blur, { top: 210, boxShadow: "" }]}
         >
           <Text style={firststyles.texttitle}>Tu Apellido</Text>
           <View style={firststyles.textinputcontainer}>
@@ -250,11 +241,11 @@ export default function First() {
           </View>
         </BlurView>
       </MotiView>
-      <MotiView style={{ position: 'absolute', flex: 1 }}>
+      <MotiView style={{ position: "absolute", flex: 1 }}>
         <BlurView
           intensity={0}
           tint="light"
-          style={[firststyles.blur, { top: 320, boxShadow: '' }]}
+          style={[firststyles.blur, { top: 320, boxShadow: "" }]}
         >
           <Text style={firststyles.texttitle}>Tu Edad</Text>
           <View style={firststyles.textinputcontainer}>
@@ -268,7 +259,7 @@ export default function First() {
               placeholder="25"
               placeholderTextColor="#999"
               style={firststyles.textinput}
-              keyboardType="number-pad"
+              keyboardType="url"
               multiline={false}
               scrollEnabled={false}
               numberOfLines={1}
@@ -285,7 +276,7 @@ export default function First() {
       />
       <AnimatedButton
         onPress={handlePictureSet}
-        source={require('@/assets/images/app/ImgReplace.png')}
+        source={require("@/assets/images/app/ImgReplace.png")}
         style={firststyles.pictureset}
         disabled={false}
       />
@@ -295,12 +286,16 @@ export default function First() {
             scale: 0.8,
             opacity: 0.4,
           }}
-          animate={gender === 'm' ? { scale: 1.1, opacity: 1 } : {}}
+          animate={
+            gender === "674ead65c96e62fd6ff0f7d9"
+              ? { scale: 1.1, opacity: 1 }
+              : {}
+          }
           transition={{
-            type: 'timing',
+            type: "timing",
             duration: 800,
           }}
-          source={require('@/assets/images/app/M.png')}
+          source={require("@/assets/images/app/M.png")}
           style={firststyles.genders}
         />
       </Pressable>
@@ -310,12 +305,16 @@ export default function First() {
             scale: 0.8,
             opacity: 0.4,
           }}
-          animate={gender === 'f' ? { scale: 1.1, opacity: 1 } : {}}
+          animate={
+            gender === "674ead8000d8d5043923e17e"
+              ? { scale: 1.1, opacity: 1 }
+              : {}
+          }
           transition={{
-            type: 'timing',
+            type: "timing",
             duration: 800,
           }}
-          source={require('@/assets/images/app/F.png')}
+          source={require("@/assets/images/app/F.png")}
           style={[firststyles.genders, { left: 205, height: 55 }]}
         />
       </Pressable>
@@ -327,10 +326,10 @@ export default function First() {
           }}
           animate={exp === 3 ? { scale: 1, opacity: 1 } : {}}
           transition={{
-            type: 'timing',
+            type: "timing",
             duration: 800,
           }}
-          source={require('@/assets/images/app/P.png')}
+          source={require("@/assets/images/app/P.png")}
           style={firststyles.exps}
         />
       </Pressable>
@@ -342,10 +341,10 @@ export default function First() {
           }}
           animate={exp === 8 ? { scale: 1, opacity: 1 } : {}}
           transition={{
-            type: 'timing',
+            type: "timing",
             duration: 800,
           }}
-          source={require('@/assets/images/app/I.png')}
+          source={require("@/assets/images/app/I.png")}
           style={[firststyles.exps, { top: 668 }]}
         />
       </Pressable>
@@ -357,18 +356,18 @@ export default function First() {
           }}
           animate={exp === 13 ? { scale: 1, opacity: 1 } : {}}
           transition={{
-            type: 'timing',
+            type: "timing",
             duration: 800,
           }}
-          source={require('@/assets/images/app/V.png')}
+          source={require("@/assets/images/app/V.png")}
           style={[firststyles.exps, { top: 718 }]}
         />
       </Pressable>
-      <MotiView style={{ position: 'absolute', flex: 1 }}>
+      <MotiView style={{ position: "absolute", flex: 1 }}>
         <AnimatedButton
           onPress={handleStartPress}
           disabled={false}
-          source={require('@/assets/images/app/Start.png')}
+          source={require("@/assets/images/app/Start.png")}
           style={firststyles.mainbutton}
         />
       </MotiView>
@@ -377,10 +376,26 @@ export default function First() {
 }
 
 const firststyles = StyleSheet.create({
-  image: {},
-  pictureset: {},
+  image: {
+    position: "absolute",
+    top: 470,
+    left: 50,
+    borderColor: "white",
+    borderWidth: 3,
+    borderRadius: 20,
+    zIndex: 150,
+    width: 75,
+    height: 75,
+  },
+  pictureset: {
+    position: "absolute",
+    width: 210,
+    height: 40,
+    left: 150,
+    top: 490,
+  },
   exps: {
-    position: 'absolute',
+    position: "absolute",
     width: 240,
     height: 49,
     left: 80,
@@ -388,7 +403,7 @@ const firststyles = StyleSheet.create({
     zIndex: 106,
   },
   genders: {
-    position: 'absolute',
+    position: "absolute",
     width: 160,
     height: 53,
     left: 30,
@@ -396,7 +411,7 @@ const firststyles = StyleSheet.create({
     zIndex: 106,
   },
   mainbutton: {
-    position: 'absolute',
+    position: "absolute",
     top: 768,
     left: 95,
     width: 200,
@@ -404,9 +419,9 @@ const firststyles = StyleSheet.create({
     zIndex: 5,
   },
   texttitle: {
-    position: 'absolute',
-    fontFamily: 'BlackFont',
-    color: '#222',
+    position: "absolute",
+    fontFamily: "BlackFont",
+    color: "#222",
     fontSize: 19,
     top: 18,
     left: 24,
@@ -416,39 +431,39 @@ const firststyles = StyleSheet.create({
     textShadowRadius: 2,
   },
   blur: {
-    position: 'absolute',
+    position: "absolute",
     width: 335,
     height: 355,
     zIndex: 5,
     top: 100,
     left: 28,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 40,
     // borderWidth: 5,
     // borderColor: "white",
-    boxShadow: '2 2 15px rgba(0,0,0,0.3)',
+    boxShadow: "2 2 15px rgba(0,0,0,0.3)",
   },
   textinputcontainer: {
-    position: 'absolute',
-    flexDirection: 'row',
+    position: "absolute",
+    flexDirection: "row",
     width: 300,
     height: 50,
     top: 55,
     left: 16,
     borderRadius: 30,
     borderWidth: 2.5,
-    borderColor: 'transparent',
-    backgroundColor: 'white',
-    boxShadow: '2 2 15px rgba(0,0,0,0.5)',
+    borderColor: "transparent",
+    backgroundColor: "white",
+    boxShadow: "2 2 15px rgba(0,0,0,0.5)",
   },
   textinputicon: {
-    position: 'absolute',
+    position: "absolute",
     left: 12,
     top: 9,
   },
   textinput: {
-    position: 'absolute',
-    fontFamily: 'BoldFont',
+    position: "absolute",
+    fontFamily: "BoldFont",
     fontSize: 17,
     top: -2.5,
     left: 43,
@@ -456,10 +471,10 @@ const firststyles = StyleSheet.create({
     height: 50,
     zIndex: 5,
     borderWidth: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   logintitle: {
-    position: 'absolute',
+    position: "absolute",
     top: 45,
     left: 102,
     width: 180,
