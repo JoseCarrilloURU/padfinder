@@ -41,18 +41,23 @@ const MockUser = {
   email: "mariomail@gmail.com",
   age: 25,
   gender: "Masculino",
-  courts: ["Cancha 1", "Cancha 2", "Cancha 3"],
+  exp: "Principante (0 a 6 meses)",
+  courts: ["Pádel Club Maracaibo", "Pádel Plus", "Pádel Maracaibo"],
 };
 
 export default function Profile() {
   const { width, height } = useWindowDimensions();
   const appHeight = height + 30;
-  const color1 = "cyan";
-  const color2 = "blue";
+  const color1 = "white";
+  const color2 = "#bbb";
 
   const colors = useDerivedValue(() => {
     return [color1, color2];
   }, []);
+
+  const handleEditImg = () => {
+    console.log("Edit Button Pressed");
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -78,20 +83,128 @@ export default function Profile() {
         <IconsBG />
       </View>
       <Header originTab={0} />
-      <BlurView intensity={60} tint="light" style={profilestyles.blurcard} />
+      <Image
+        source={require("@/assets/images/app/profiletitle.png")}
+        style={profilestyles.title}
+      />
+      <AnimatedButton
+        source={require("@/assets/images/app/EditButton.png")}
+        style={profilestyles.editbutton}
+        onPress={handleEditImg}
+        disabled={false}
+      />
+      <Image
+        source={backdropImageMap[MockUser.id]}
+        style={profilestyles.image}
+      />
+      <Text style={profilestyles.name}>Mario González</Text>
+      <Text style={[profilestyles.creds, { top: 635 }]}>
+        @{MockUser.username}
+      </Text>
+      <Text style={[profilestyles.creds, { top: 668, fontSize: 21 }]}>
+        {MockUser.email}
+      </Text>
+      <Text
+        style={[
+          profilestyles.creds,
+          { fontSize: 24, fontFamily: "BaseItalic" },
+        ]}
+      >
+        {MockUser.age} años - {MockUser.gender}
+      </Text>
+      <Text
+        style={[
+          profilestyles.creds,
+          {
+            fontSize: 16,
+            fontFamily: "BaseItalic",
+            top: 510,
+          },
+        ]}
+      >
+        {MockUser.exp} jugando Pádel
+      </Text>
+      <BlurView intensity={80} tint="light" style={profilestyles.blurcard} />
+      <BlurView
+        intensity={80}
+        tint="light"
+        style={[profilestyles.blurcard, { height: 130, top: 580 }]}
+      />
+      <Text
+        style={[
+          profilestyles.name,
+          { top: 590, textDecorationLine: "underline", fontSize: 30 },
+        ]}
+      >
+        Tus Credenciales:
+      </Text>
     </View>
   );
 }
 
 const profilestyles = StyleSheet.create({
+  editbutton: {
+    position: "absolute",
+    top: 185,
+    left: 255,
+    width: 55,
+    height: 55,
+  },
+  name: {
+    position: "absolute",
+    fontFamily: "BlackFont",
+    textAlign: "center",
+    top: 415,
+    left: 30,
+    fontSize: 34,
+    zIndex: 100,
+    textShadowRadius: 3,
+    borderWidth: 0,
+    textDecorationLine: "underline",
+    width: 330,
+  },
+  title: {
+    position: "absolute",
+    top: 112,
+    left: 105,
+    width: 180,
+    height: 55,
+  },
+  creds: {
+    position: "absolute",
+    fontFamily: "BoldFont",
+    textAlign: "center",
+    color: "#222",
+    top: 478,
+    left: 30,
+    fontSize: 22,
+    zIndex: 100,
+    textShadowRadius: 1,
+    borderWidth: 0,
+    // textDecorationLine: "underline",
+    width: 330,
+  },
+  image: {
+    position: "absolute",
+    width: 200,
+    height: 200,
+    top: 200,
+    left: 96,
+    borderRadius: 40,
+    borderColor: "white",
+    borderWidth: 4,
+    zIndex: 1,
+    boxShadow: "4 4 15px rgba(0,0,0,0.5)",
+  },
   blurcard: {
     position: "absolute",
     width: 340,
-    height: 380,
-    top: 140,
+    height: 375,
+    top: 180,
     left: 25,
-    borderRadius: 50,
+    borderRadius: 45,
     overflow: "hidden",
     boxShadow: "4 4 12px rgba(0,0,0,0.2)",
+    zIndex: 0,
   },
 });
