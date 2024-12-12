@@ -197,6 +197,13 @@ export default function First() {
           </View>
         </BlurView>
       </MotiView>
+      <Image style={firststyles.image} />
+      <AnimatedButton
+        onPress={handlePictureSet}
+        source={require("@/assets/images/app/ImgReplace.png")}
+        style={firststyles.pictureset}
+        disabled={false}
+      />
       <Pressable onPress={handleM}>
         <MotiImage
           from={{
@@ -285,6 +292,8 @@ export default function First() {
 }
 
 const firststyles = StyleSheet.create({
+  image: {},
+  pictureset: {},
   exps: {
     position: "absolute",
     width: 240,
