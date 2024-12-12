@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   TextInput,
@@ -8,7 +8,7 @@ import {
   FlatList,
   StyleSheet,
   useWindowDimensions,
-} from "react-native";
+} from 'react-native';
 import {
   Canvas,
   Rect,
@@ -16,107 +16,144 @@ import {
   LinearGradient,
   RadialGradient,
   vec,
-} from "@shopify/react-native-skia";
-import IconsBG from "@/components/iconsBG";
-import { MotiView, MotiImage, MotiText, ScrollView } from "moti";
+} from '@shopify/react-native-skia';
+import IconsBG from '@/components/iconsBG';
+import { MotiView, MotiImage, MotiText, ScrollView } from 'moti';
 import Animated, {
   useSharedValue,
   useDerivedValue,
   withTiming,
   Easing,
-} from "react-native-reanimated";
-import { router, SplashScreen } from "expo-router";
-import FooterWaves from "@/components/footerWaves";
-import AnimatedButton from "@/components/AnimatedButton";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { playSound } from "@/components/soundUtils";
-import { BlurView } from "expo-blur";
-import { backdropImageMap } from "@/components/imageMaps";
-import Header from "@/components/header";
+} from 'react-native-reanimated';
+import { router, SplashScreen } from 'expo-router';
+import FooterWaves from '@/components/footerWaves';
+import AnimatedButton from '@/components/AnimatedButton';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { playSound } from '@/components/soundUtils';
+import { BlurView } from 'expo-blur';
+import Header from '@/components/header';
+import { fetchWrapper, FetchResponse } from '../services/wrapper';
+import { BASE_URL } from '../constants';
+import { useAuth } from '../context/auth/authContext';
+import { useChat } from '../context/chat/chatContext';
 
 interface Partner {
   id: number;
+  chat_id: string;
   name: string;
   age: number;
   gender: string;
   lastMessage: string;
+  imageUrl: string;
 }
 
-const mockData = [
-  {
-    id: 1,
-    name: "Andrea Pérez",
-    age: 20,
-    gender: "Femenino",
-    lastMessage: "pipipipi",
-  },
-  {
-    id: 2,
-    name: "Álex Hernández",
-    age: 20,
-    gender: "Masculino",
-    lastMessage: "Me dijo que no era pelirroja",
-  },
-  {
-    id: 4,
-    name: "Gabriel G(ar)ay",
-    age: 21,
-    gender: "Masculino",
-    lastMessage: "English or Spanish",
-  },
-  {
-    id: 5,
-    name: "Atlina García",
-    age: 19,
-    gender: "Femenino",
-    lastMessage: "No spoileen Arcane",
-  },
-  {
-    id: 6,
-    name: "Andrés Sánchez",
-    age: 27,
-    gender: "Masculino",
-    lastMessage: "Qué buena estuvo la cerveza",
-  },
-  {
-    id: 3,
-    name: "Mario González",
-    age: 25,
-    gender: "Masculino",
-    lastMessage: "El diseño está espartano",
-  },
-];
+export interface User {
+  _id: string;
+  username: string;
+  person_id: {
+    _id: string;
+    name: string;
+    lastname: string;
+    email: string;
+    genre: {
+      _id: string;
+      description: string;
+      __v: number;
+    };
+    age: number;
+    experience: number;
+    __v: number;
+  };
+  status: boolean;
+  __v: number;
+}
+
+export interface ResponseChat {
+  _id: string;
+  users: User[];
+  name: string;
+  __v: number;
+  lastMessage: {
+    type_message: string;
+    description?: string;
+  };
+}
 
 export default function Socials() {
+  const [chats, setChats] = useState<Partner[]>([]);
+  const { user, token } = useAuth();
+  const { setChatId } = useChat();
+
   const { width, height } = useWindowDimensions();
   const appHeight = height + 30;
-  const color1 = "#fff";
-  const color2 = "#cfb";
+  const color1 = '#fff';
+  const color2 = '#cfb';
 
   const colors = useDerivedValue(() => {
     return [color1, color2];
   }, []);
 
-  const handleChatPress = () => {
-    console.log("Chat Pressed");
-    router.push("/chat");
+  const handleChatPress = (chat_id: string) => {
+    console.log('Chat Pressed', chat_id);
+    setChatId(chat_id);
+    router.push('/chat');
+  };
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      const response: FetchResponse<ResponseChat[]> = await fetchWrapper(
+        `${BASE_URL}chat?user_id=${user?.id}`,
+        {
+          token: token || '',
+        },
+      );
+      if (response.error) {
+        console.error(response.error);
+      } else {
+        const mappedChats =
+          response.data?.map((chat, index) => ({
+            id: index,
+            chat_id: chat._id,
+            name: chat.users[0].username,
+            age: chat.users[0].person_id.age,
+            gender: chat.users[0].person_id.genre.description,
+            lastMessage:
+              chat.lastMessage.description || chat.lastMessage.type_message,
+            imageUrl: `${BASE_URL}user/image?id=${chat.users[0]._id}`,
+          })) || [];
+        setChats(mappedChats);
+      }
+    };
+
+    fetchChats();
+  }, []);
+
+  const getHeaders = () => {
+    return {
+      Authorization: `Bearer ${token}`,
+    };
   };
 
   const Partner: React.FC<Partner> = ({
     id,
+    chat_id,
     name,
     age,
     gender,
     lastMessage,
+    imageUrl,
   }) => (
     <View style={socialstyles.itemContainer}>
-      <Pressable onPress={handleChatPress}>
+      <Pressable onPress={() => handleChatPress(chat_id)}>
         <BlurView
           intensity={95}
           tint="prominent"
           style={socialstyles.blurcard}
         />
-        <Image source={backdropImageMap[id]} style={socialstyles.itemimage} />
+        <Image
+          source={{ uri: imageUrl, headers: getHeaders() }}
+          style={socialstyles.itemimage}
+        />
         <Text
           ellipsizeMode="tail"
           numberOfLines={1}
@@ -140,14 +177,19 @@ export default function Socials() {
       <Canvas
         style={{
           flex: 1,
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
           width: width,
           height: appHeight,
         }}
       >
-        <Rect x={0} y={0} width={width} height={appHeight}>
+        <Rect
+          x={0}
+          y={0}
+          width={width}
+          height={appHeight}
+        >
           <LinearGradient
             start={vec(0, 0)}
             end={vec(width, appHeight)}
@@ -155,25 +197,27 @@ export default function Socials() {
           />
         </Rect>
       </Canvas>
-      <View style={{ position: "absolute", top: 120 }}>
+      <View style={{ position: 'absolute', top: 120 }}>
         <IconsBG />
       </View>
       <Header originTab={0} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <Image
-          source={require("@/assets/images/app/chattitle.png")}
+          source={require('@/assets/images/app/chattitle.png')}
           style={socialstyles.chattitle}
         />
         <View style={socialstyles.listcontainer}>
           <FlatList
-            data={mockData}
+            data={chats}
             renderItem={({ item }) => (
               <Partner
+                chat_id={item.chat_id}
                 id={item.id}
                 name={item.name}
                 age={item.age}
                 gender={item.gender}
                 lastMessage={item.lastMessage}
+                imageUrl={item.imageUrl}
               />
             )}
             keyExtractor={(item) => item.id.toString()}
@@ -187,15 +231,15 @@ export default function Socials() {
 
 const socialstyles = StyleSheet.create({
   chattitle: {
-    position: "relative",
+    position: 'relative',
     top: 117,
     left: 20,
     width: 200,
     height: 35,
   },
   itemdata: {
-    position: "absolute",
-    fontFamily: "BlackFont",
+    position: 'absolute',
+    fontFamily: 'BlackFont',
     textShadowRadius: 2,
     fontSize: 20,
     top: 20,
@@ -203,32 +247,32 @@ const socialstyles = StyleSheet.create({
     width: 240,
   },
   itemmessage: {
-    position: "absolute",
-    fontFamily: "BaseItalic",
-    color: "#222",
+    position: 'absolute',
+    fontFamily: 'BaseItalic',
+    color: '#222',
     fontSize: 15,
     top: 52,
     left: 108,
     width: 240,
   },
   itemimage: {
-    position: "absolute",
+    position: 'absolute',
     width: 75,
     height: 75,
     top: 9.5,
     left: 15,
     borderRadius: 40,
-    borderColor: "#fff",
+    borderColor: '#fff',
     borderWidth: 2,
-    boxShadow: "3 3 12px rgba(0,0,0,0.3)",
+    boxShadow: '3 3 12px rgba(0,0,0,0.3)',
   },
   blurcard: {
     width: 360,
     left: 4,
     height: 95,
     borderRadius: 30,
-    overflow: "hidden",
-    boxShadow: "2 2 15px rgba(0,0,0,0.3)",
+    overflow: 'hidden',
+    boxShadow: '2 2 15px rgba(0,0,0,0.3)',
   },
   itemContainer: {
     width: 400,
@@ -238,7 +282,7 @@ const socialstyles = StyleSheet.create({
   },
   listcontainer: {
     marginTop: 120,
-    height: "auto",
+    height: 'auto',
     marginBottom: 75,
   },
 });

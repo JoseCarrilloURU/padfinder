@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   TextInput,
@@ -7,7 +7,7 @@ import {
   Text,
   StyleSheet,
   useWindowDimensions,
-} from "react-native";
+} from 'react-native';
 import {
   Canvas,
   Rect,
@@ -15,21 +15,42 @@ import {
   LinearGradient,
   RadialGradient,
   vec,
-} from "@shopify/react-native-skia";
-import IconsBG from "@/components/iconsBG";
-import { MotiView, MotiImage, MotiText } from "moti";
+} from '@shopify/react-native-skia';
+import IconsBG from '@/components/iconsBG';
+import { MotiView, MotiImage, MotiText } from 'moti';
 import Animated, {
   useSharedValue,
   useDerivedValue,
   withTiming,
   Easing,
-} from "react-native-reanimated";
-import { router, SplashScreen } from "expo-router";
-import FooterWaves from "@/components/footerWaves";
-import AnimatedButton from "@/components/AnimatedButton";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { playSound } from "@/components/soundUtils";
-import { BlurView } from "expo-blur";
+} from 'react-native-reanimated';
+import { router, SplashScreen } from 'expo-router';
+import FooterWaves from '@/components/footerWaves';
+import AnimatedButton from '@/components/AnimatedButton';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { playSound } from '@/components/soundUtils';
+import { BlurView } from 'expo-blur';
+import { BASE_URL, BASE_AUTH_URL, WS_BASE_URL } from './constants';
+import { fetchWrapper, FetchResponse } from './services/wrapper';
+import { useAuth } from './context/auth/authContext';
+import useConnectSocket from './customs/useConnectSocket';
+
+interface LoginResponse {
+  token: string;
+  user: {
+    __v: number;
+    _id: string;
+    person_id: string;
+    status: boolean;
+    username: string;
+  };
+  msg: string;
+}
+
+interface ForgotResponse {
+  token: string;
+  msg: string;
+}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,6 +58,8 @@ export default function Index() {
   setTimeout(() => {
     SplashScreen.hideAsync();
   }, 300);
+
+  const { setToken, setUser, token, user } = useAuth();
 
   const [pressableDisabled, setPressableDisabled] = useState(false);
   const [loginEnabled, setLoginEnabled] = useState(false);
@@ -46,14 +69,21 @@ export default function Index() {
   const [confirmEnabled, setConfirmEnabled] = useState(false);
   const [cardOpacity, setCardOpacity] = useState(false);
 
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const { width, height } = useWindowDimensions();
   const appHeight = height + 30;
-  const color1 = "#87eaff"; // Light Blue
-  const color2 = "blue"; // Blue
-  const color3 = "lightgreen";
-  const color4 = "green";
-  const color5 = "#fff";
-  const color6 = "#bcf";
+  const color1 = '#87eaff'; // Light Blue
+  const color2 = 'blue'; // Blue
+  const color3 = 'lightgreen';
+  const color4 = 'green';
+  const color5 = '#fff';
+  const color6 = '#bcf';
   const leftColor = useSharedValue(color2);
   const rightColor = useSharedValue(color1);
 
@@ -62,7 +92,7 @@ export default function Index() {
   }, []);
 
   const handlePress = () => {
-    console.log("Tap to Begin Pressed");
+    console.log('Tap to Begin Pressed');
     // setTimeout(async () => {
     //   await playSound(require("@/assets/sound/BallHit.mp3"));
     // }, 20);
@@ -70,12 +100,33 @@ export default function Index() {
     setLoginEnabled(true);
   };
 
-  const handleLoginPressed = () => {
-    console.log("Login Pressed");
-    router.push("/(tabs)/discover");
+  const handleLoginPressed = async () => {
+    console.log('Login pressed');
+    const response: FetchResponse<LoginResponse> = await fetchWrapper(
+      `${BASE_AUTH_URL}login`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ user: email, password }),
+      },
+    );
+    if (response.error) {
+      console.error(response.error);
+    } else {
+      setToken(response.data?.token ?? null);
+      setUser({
+        id: response.data?.user._id,
+        person_id: response.data?.user.person_id,
+        name: response.data?.user.username,
+      });
+      console.log('Luego de ejeuctar la respuesta todo bien');
+      router.push('/(tabs)/discover');
+      useConnectSocket(WS_BASE_URL, response.data?.user._id ?? '');
+    }
+    setEmail('');
+    setPassword('');
   };
   const handleGoToRegister = () => {
-    console.log("Go to Register Pressed");
+    console.log('Go to Register Pressed');
     leftColor.value = withTiming(color4, {
       duration: 2500,
       easing: Easing.inOut(Easing.ease),
@@ -88,7 +139,7 @@ export default function Index() {
     setRegisterEnabled(true);
   };
   const handleGoToForgot = () => {
-    console.log("Go to Forgot Pressed");
+    console.log('Go to Forgot Pressed');
     leftColor.value = withTiming(color6, {
       duration: 2500,
       easing: Easing.inOut(Easing.ease),
@@ -102,27 +153,70 @@ export default function Index() {
     setSendEnabled(true);
   };
 
-  const handleRegisterPressed = () => {
-    console.log("Register Pressed");
-    setRegisterEnabled(false);
-    setLoginEnabled(true);
+  const handleRegisterPressed = async () => {
+    const response = await fetchWrapper(`${BASE_AUTH_URL}register`, {
+      method: 'POST',
+      body: JSON.stringify({ email, username, password }),
+    });
+    if (response.error) {
+      console.error(response.error);
+    } else {
+      console.log(response.data);
+    }
+    setEmail('');
+    setUsername('');
+    setPassword('');
   };
 
-  const handleSendPressed = () => {
-    console.log("Send Pressed");
+  const handleSendPressed = async () => {
+    console.log('Send Pressed');
+    const response: FetchResponse<ForgotResponse> = await fetchWrapper(
+      `${BASE_AUTH_URL}forgout`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    );
+    if (response.error) {
+      console.error(response.error);
+    } else {
+      setUser({
+        tokenForgout: response.data?.token,
+      });
+    }
+
+    setEmail('');
     setCardOpacity(true);
     setSendEnabled(false);
     setVerifyEnabled(true);
   };
 
-  const handleVerifyPressed = () => {
-    console.log("Verify Pressed");
+  const handleVerifyPressed = async () => {
+    console.log('Verify Pressed');
+
+    const response: FetchResponse<ForgotResponse> = await fetchWrapper(
+      `${BASE_AUTH_URL}forgot/code/${user?.tokenForgout}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ code: verificationCode }),
+      },
+    );
+    if (response.error) {
+      console.error(response.error);
+    } else {
+      console.log(response.data);
+      setUser({
+        tokenChange: response.data?.token,
+      });
+    }
+
+    setVerificationCode('');
     setVerifyEnabled(false);
     setConfirmEnabled(true);
   };
 
-  const handleConfirmPressed = () => {
-    console.log("Confirm Pressed");
+  const handleConfirmPressed = async () => {
+    console.log('Confirm Pressed', user?.tokenChange);
     leftColor.value = withTiming(color2, {
       duration: 2500,
       easing: Easing.inOut(Easing.ease),
@@ -131,12 +225,29 @@ export default function Index() {
       duration: 2500,
       easing: Easing.inOut(Easing.ease),
     });
+
+    const response = await fetchWrapper(
+      `${BASE_AUTH_URL}forgout/change/${user?.tokenChange}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ password: newPassword }),
+      },
+    );
+
+    if (response.error) {
+      console.error(response.error);
+    } else {
+      console.log(response.data);
+    }
+
+    setNewPassword('');
+    setConfirmPassword('');
     setConfirmEnabled(false);
     setLoginEnabled(true);
   };
 
   const handleBackToLogin = () => {
-    console.log("Back to Login Pressed");
+    console.log('Back to Login Pressed');
     leftColor.value = withTiming(color2, {
       duration: 2500,
       easing: Easing.inOut(Easing.ease),
@@ -160,7 +271,12 @@ export default function Index() {
     >
       <View style={styles.container}>
         <Canvas style={{ flex: 1 }}>
-          <Rect x={0} y={0} width={width} height={appHeight}>
+          <Rect
+            x={0}
+            y={0}
+            width={width}
+            height={appHeight}
+          >
             <LinearGradient
               start={vec(0, 0)}
               end={vec(width, appHeight)}
@@ -178,21 +294,21 @@ export default function Index() {
             transform: pressableDisabled ? [{ scale: 0.6 }] : [{ scale: 1 }],
           }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 2000,
           }}
-          source={require("@/assets/images/index/LogoHDShade.png")}
+          source={require('@/assets/images/index/LogoHDShade.png')}
           style={styles.logo}
         />
         <MotiImage
           from={{ transform: [{ scale: 1 }], opacity: 1 }}
           animate={{ transform: [{ scale: 0.85 }], opacity: 0 }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1700,
             loop: pressableDisabled ? false : true,
           }}
-          source={require("@/assets/images/index/TapToBegin.png")}
+          source={require('@/assets/images/index/TapToBegin.png')}
           style={styles.taptobegin}
         />
 
@@ -202,10 +318,10 @@ export default function Index() {
             opacity: pressableDisabled ? 0 : 1,
           }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1000,
           }}
-          source={require("@/assets/images/index/LLCLogoShade.png")}
+          source={require('@/assets/images/index/LLCLogoShade.png')}
           style={styles.llc}
         />
         <MotiImage
@@ -214,10 +330,10 @@ export default function Index() {
             opacity: pressableDisabled ? 0 : 1,
           }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1000,
           }}
-          source={require("@/assets/images/index/Rights.png")}
+          source={require('@/assets/images/index/Rights.png')}
           style={styles.rights}
         />
 
@@ -227,10 +343,10 @@ export default function Index() {
             opacity: pressableDisabled ? 0 : 1,
           }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 750,
           }}
-          source={require("@/assets/images/index/LogoHDShade.png")}
+          source={require('@/assets/images/index/LogoHDShade.png')}
           style={[styles.llc, { left: 290, bottom: 7, width: 95, height: 55 }]}
         />
 
@@ -240,24 +356,24 @@ export default function Index() {
           from={{ translateY: 100 }}
           animate={{ translateY: loginEnabled ? 0 : 100 }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1600,
             easing: Easing.out(Easing.cubic),
           }}
         >
-          <View style={{ transform: [{ rotate: "3deg" }] }}>
+          <View style={{ transform: [{ rotate: '3deg' }] }}>
             <AnimatedButton
               onPress={handleGoToRegister}
               disabled={false}
-              source={require("@/assets/images/index/ToRegister.png")}
+              source={require('@/assets/images/index/ToRegister.png')}
               style={styles.toregister}
             />
           </View>
-          <View style={{ transform: [{ rotate: "-2.8deg" }] }}>
+          <View style={{ transform: [{ rotate: '-2.8deg' }] }}>
             <AnimatedButton
               onPress={handleGoToForgot}
               disabled={false}
-              source={require("@/assets/images/index/ToForgot.png")}
+              source={require('@/assets/images/index/ToForgot.png')}
               style={styles.toforgot}
             />
           </View>
@@ -265,11 +381,11 @@ export default function Index() {
         <MotiView
           from={{ opacity: 0 }}
           animate={{ opacity: loginEnabled ? 1 : 0 }}
-          transition={{ type: "timing", duration: 1000, delay: 1000 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1000 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <MotiImage
-            source={require("@/assets/images/index/LoginTitle.png")}
+            source={require('@/assets/images/index/LoginTitle.png')}
             style={styles.logintitle}
           />
         </MotiView>
@@ -288,10 +404,14 @@ export default function Index() {
                 }
               : {}
           }
-          transition={{ type: "timing", duration: 1000, delay: 500 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 500 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
-          <BlurView intensity={55} tint="light" style={styles.blur}>
+          <BlurView
+            intensity={55}
+            tint="light"
+            style={styles.blur}
+          >
             <Text style={styles.texttitle}>Nombre de Usuario o Correo</Text>
             <View style={styles.textinputcontainer}>
               <Ionicons
@@ -309,6 +429,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={email}
+                onChangeText={setEmail}
               />
             </View>
           </BlurView>
@@ -328,8 +450,8 @@ export default function Index() {
                 }
               : {}
           }
-          transition={{ type: "timing", duration: 1000, delay: 1000 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1000 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <BlurView
             intensity={55}
@@ -353,6 +475,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={password}
+                onChangeText={setPassword}
               />
             </View>
           </BlurView>
@@ -372,13 +496,13 @@ export default function Index() {
                 }
               : {}
           }
-          transition={{ type: "timing", duration: 1000, delay: 1500 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1500 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <AnimatedButton
             onPress={handleLoginPressed}
             disabled={false}
-            source={require("@/assets/images/index/LoginButton.png")}
+            source={require('@/assets/images/index/LoginButton.png')}
             style={styles.mainbutton}
           />
         </MotiView>
@@ -391,7 +515,7 @@ export default function Index() {
             translateY: pressableDisabled ? (!loginEnabled ? 0 : 100) : 100,
           }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1600,
             easing: Easing.out(Easing.cubic),
           }}
@@ -399,18 +523,18 @@ export default function Index() {
           <AnimatedButton
             onPress={handleBackToLogin}
             disabled={false}
-            source={require("@/assets/images/index/ToLogin.png")}
+            source={require('@/assets/images/index/ToLogin.png')}
             style={styles.tologin}
           />
         </MotiView>
         <MotiView
           from={{ opacity: 0 }}
           animate={{ opacity: registerEnabled ? 1 : 0 }}
-          transition={{ type: "timing", duration: 1000, delay: 1000 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1000 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <MotiImage
-            source={require("@/assets/images/index/RegisterTitle.png")}
+            source={require('@/assets/images/index/RegisterTitle.png')}
             style={[
               styles.logintitle,
               { top: 166, left: 118, width: 150, height: 50 },
@@ -423,11 +547,11 @@ export default function Index() {
           }}
           animate={{ translateX: registerEnabled ? 0 : 400 }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1000,
             delay: loginEnabled ? 0 : 1000,
           }}
-          style={{ position: "absolute", flex: 1 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <BlurView
             intensity={55}
@@ -451,6 +575,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={email}
+                onChangeText={setEmail}
               />
             </View>
           </BlurView>
@@ -461,11 +587,11 @@ export default function Index() {
           }}
           animate={{ translateX: registerEnabled ? 0 : 400 }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1000,
             delay: loginEnabled ? 500 : 1500,
           }}
-          style={{ position: "absolute", flex: 1 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <BlurView
             intensity={55}
@@ -489,6 +615,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={username}
+                onChangeText={setUsername}
               />
             </View>
           </BlurView>
@@ -499,11 +627,11 @@ export default function Index() {
           }}
           animate={{ translateX: registerEnabled ? 0 : 400 }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1000,
             delay: loginEnabled ? 1000 : 2000,
           }}
-          style={{ position: "absolute", flex: 1 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <BlurView
             intensity={55}
@@ -527,6 +655,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={password}
+                onChangeText={setPassword}
               />
             </View>
           </BlurView>
@@ -537,16 +667,16 @@ export default function Index() {
           }}
           animate={{ translateX: registerEnabled ? 0 : 400 }}
           transition={{
-            type: "timing",
+            type: 'timing',
             duration: 1000,
             delay: loginEnabled || confirmEnabled ? 1500 : 2500,
           }}
-          style={{ position: "absolute", flex: 1 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <AnimatedButton
             onPress={handleRegisterPressed}
             disabled={false}
-            source={require("@/assets/images/index/RegisterButton.png")}
+            source={require('@/assets/images/index/RegisterButton.png')}
             style={[
               styles.mainbutton,
               { top: 655, left: 70, width: 250, height: 50 },
@@ -567,18 +697,18 @@ export default function Index() {
               ? 1
               : 0,
           }}
-          transition={{ type: "timing", duration: 1000, delay: 1200 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1200 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <MotiImage
-            source={require("@/assets/images/index/ForgotTitle.png")}
+            source={require('@/assets/images/index/ForgotTitle.png')}
             style={[styles.logintitle, { top: 192, left: 66 }]}
           />
         </MotiView>
         <View
           style={{
             flex: 1,
-            position: "absolute",
+            position: 'absolute',
             opacity: loginEnabled && cardOpacity ? 0 : 1,
           }}
         >
@@ -591,11 +721,11 @@ export default function Index() {
                 sendEnabled || verifyEnabled ? 0 : confirmEnabled ? 400 : -400,
             }}
             transition={{
-              type: "timing",
+              type: 'timing',
               duration: 1000,
               delay: loginEnabled || confirmEnabled ? 0 : 750,
             }}
-            style={{ position: "absolute", flex: 1 }}
+            style={{ position: 'absolute', flex: 1 }}
           >
             <BlurView
               intensity={75}
@@ -619,6 +749,8 @@ export default function Index() {
                   scrollEnabled={false}
                   numberOfLines={1}
                   maxLength={50}
+                  value={email}
+                  onChangeText={setEmail}
                 />
               </View>
             </BlurView>
@@ -632,11 +764,11 @@ export default function Index() {
                 sendEnabled || verifyEnabled ? 0 : confirmEnabled ? 400 : -400,
             }}
             transition={{
-              type: "timing",
+              type: 'timing',
               duration: 1000,
               delay: loginEnabled || confirmEnabled ? 500 : 1250,
             }}
-            style={{ position: "absolute", flex: 1 }}
+            style={{ position: 'absolute', flex: 1 }}
           >
             <BlurView
               intensity={75}
@@ -660,6 +792,8 @@ export default function Index() {
                   scrollEnabled={false}
                   numberOfLines={1}
                   maxLength={50}
+                  value={verificationCode}
+                  onChangeText={setVerificationCode}
                 />
               </View>
             </BlurView>
@@ -673,16 +807,16 @@ export default function Index() {
                 sendEnabled || verifyEnabled ? 0 : confirmEnabled ? 400 : -400,
             }}
             transition={{
-              type: "timing",
+              type: 'timing',
               duration: 1000,
               delay: loginEnabled || confirmEnabled ? 250 : 1000,
             }}
-            style={{ position: "absolute", flex: 1 }}
+            style={{ position: 'absolute', flex: 1 }}
           >
             <AnimatedButton
               onPress={handleSendPressed}
               disabled={false}
-              source={require("@/assets/images/index/SendButton.png")}
+              source={require('@/assets/images/index/SendButton.png')}
               style={[
                 styles.mainbutton,
                 { top: 420, left: 105, width: 170, height: 62 },
@@ -698,16 +832,16 @@ export default function Index() {
                 sendEnabled || verifyEnabled ? 0 : confirmEnabled ? 400 : -400,
             }}
             transition={{
-              type: "timing",
+              type: 'timing',
               duration: 1000,
               delay: loginEnabled || confirmEnabled ? 750 : 1500,
             }}
-            style={{ position: "absolute", flex: 1 }}
+            style={{ position: 'absolute', flex: 1 }}
           >
             <AnimatedButton
               onPress={handleVerifyPressed}
               disabled={verifyEnabled ? false : true}
-              source={require("@/assets/images/index/VerifyButton.png")}
+              source={require('@/assets/images/index/VerifyButton.png')}
               style={[
                 styles.mainbutton,
                 { top: 635, left: 90, width: 200, height: 62 },
@@ -729,10 +863,14 @@ export default function Index() {
                 }
               : {}
           }
-          transition={{ type: "timing", duration: 1000, delay: 500 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 500 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
-          <BlurView intensity={75} tint="light" style={styles.blur}>
+          <BlurView
+            intensity={75}
+            tint="light"
+            style={styles.blur}
+          >
             <Text style={styles.texttitle}>Tu Nueva Contraseña</Text>
             <View style={styles.textinputcontainer}>
               <Ionicons
@@ -750,6 +888,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={newPassword}
+                onChangeText={setNewPassword}
               />
             </View>
           </BlurView>
@@ -765,8 +905,8 @@ export default function Index() {
                 }
               : {}
           }
-          transition={{ type: "timing", duration: 1000, delay: 1000 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1000 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <BlurView
             intensity={75}
@@ -790,6 +930,8 @@ export default function Index() {
                 scrollEnabled={false}
                 numberOfLines={1}
                 maxLength={50}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
               />
             </View>
           </BlurView>
@@ -805,13 +947,13 @@ export default function Index() {
                 }
               : {}
           }
-          transition={{ type: "timing", duration: 1000, delay: 1500 }}
-          style={{ position: "absolute", flex: 1 }}
+          transition={{ type: 'timing', duration: 1000, delay: 1500 }}
+          style={{ position: 'absolute', flex: 1 }}
         >
           <AnimatedButton
             onPress={handleConfirmPressed}
             disabled={false}
-            source={require("@/assets/images/index/ConfirmButton.png")}
+            source={require('@/assets/images/index/ConfirmButton.png')}
             style={[
               styles.mainbutton,
               { top: 618, left: 55, width: 280, height: 65 },
@@ -825,7 +967,7 @@ export default function Index() {
 
 const styles = StyleSheet.create({
   mainbutton: {
-    position: "absolute",
+    position: 'absolute',
     top: 603,
     left: 95,
     width: 190,
@@ -833,22 +975,22 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   blur: {
-    position: "absolute",
+    position: 'absolute',
     width: 335,
     height: 132,
     zIndex: 5,
     top: 295,
     left: 28,
-    overflow: "hidden",
+    overflow: 'hidden',
     borderRadius: 40,
     // borderWidth: 5,
     // borderColor: "white",
-    boxShadow: "2 2 15px rgba(0,0,0,0.3)",
+    boxShadow: '2 2 15px rgba(0,0,0,0.3)',
   },
   texttitle: {
-    position: "absolute",
-    fontFamily: "BlackFont",
-    color: "#222",
+    position: 'absolute',
+    fontFamily: 'BlackFont',
+    color: '#222',
     fontSize: 19,
     top: 18,
     left: 24,
@@ -858,26 +1000,26 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   textinputcontainer: {
-    position: "absolute",
-    flexDirection: "row",
+    position: 'absolute',
+    flexDirection: 'row',
     width: 300,
     height: 50,
     top: 55,
     left: 16,
     borderRadius: 30,
     borderWidth: 2.5,
-    borderColor: "transparent",
-    backgroundColor: "white",
-    boxShadow: "2 2 15px rgba(0,0,0,0.5)",
+    borderColor: 'transparent',
+    backgroundColor: 'white',
+    boxShadow: '2 2 15px rgba(0,0,0,0.5)',
   },
   textinputicon: {
-    position: "absolute",
+    position: 'absolute',
     left: 12,
     top: 9,
   },
   textinput: {
-    position: "absolute",
-    fontFamily: "BoldFont",
+    position: 'absolute',
+    fontFamily: 'BoldFont',
     fontSize: 17,
     top: -2.5,
     left: 43,
@@ -885,10 +1027,10 @@ const styles = StyleSheet.create({
     height: 50,
     zIndex: 5,
     borderWidth: 0,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
   logintitle: {
-    position: "absolute",
+    position: 'absolute',
     top: 190,
     left: 63,
     width: 260,
@@ -896,7 +1038,7 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   toforgot: {
-    position: "absolute",
+    position: 'absolute',
     top: -53,
     left: 17,
     width: 190,
@@ -904,7 +1046,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   tologin: {
-    position: "absolute",
+    position: 'absolute',
     top: -59,
     left: 90,
     width: 210,
@@ -912,7 +1054,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   toregister: {
-    position: "absolute",
+    position: 'absolute',
     top: -59,
     left: 217,
     width: 156,
@@ -920,7 +1062,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   rights: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 2.5,
     left: 8,
     width: 85,
@@ -928,7 +1070,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   llc: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 17,
     left: 20,
     width: 70,
@@ -936,22 +1078,22 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   ball: {
-    position: "absolute",
+    position: 'absolute',
     top: 300,
     left: 150,
     width: 80,
     height: 80,
-    transform: [{ rotate: "-90deg" }],
+    transform: [{ rotate: '-90deg' }],
   },
   logo: {
-    position: "absolute",
+    position: 'absolute',
     top: 260,
     left: 14,
     width: 375,
     height: 215,
   },
   taptobegin: {
-    position: "absolute",
+    position: 'absolute',
     top: 500,
     left: 37,
     width: 315,
@@ -961,7 +1103,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    position: "absolute",
+    position: 'absolute',
     top: 120,
   },
 });
