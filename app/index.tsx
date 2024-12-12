@@ -97,9 +97,9 @@ export default function Index() {
 
   const handlePress = () => {
     console.log("Tap to Begin Pressed");
-    // setTimeout(async () => {
-    //   await playSound(require("@/assets/sound/BallHit.mp3"));
-    // }, 20);
+    setTimeout(async () => {
+      await playSound(require("@/assets/sound/BallHit.mp3"));
+    }, 20);
     setPressableDisabled(true);
     setLoginEnabled(true);
   };

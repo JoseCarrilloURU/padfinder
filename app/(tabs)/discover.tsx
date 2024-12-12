@@ -120,7 +120,10 @@ export default function Discover() {
     }
     if (currentIndexRef.current < swipers.length - 1) {
       currentIndexRef.current += 1;
-      flatListRef.current?.scrollToIndex({ index: currentIndexRef.current });
+      flatListRef.current?.scrollToIndex({
+        index: currentIndexRef.current,
+        animated: true,
+      });
     }
   };
 
@@ -165,7 +168,10 @@ export default function Discover() {
 
     if (currentIndexRef.current < swipers.length - 1) {
       currentIndexRef.current += 1;
-      flatListRef.current?.scrollToIndex({ index: currentIndexRef.current });
+      flatListRef.current?.scrollToIndex({
+        index: currentIndexRef.current,
+        animated: true,
+      });
     }
   };
 
