@@ -70,7 +70,7 @@ export default function Chat() {
   const scrollViewRef = useRef<ScrollView>(null);
 
   const { token, user } = useAuth();
-  const { chatId } = useChat();
+  const { chatId, chatInfo } = useChat();
   const socket = useConnectSocket(WS_BASE_URL, user?.id ?? '');
 
   useEffect(() => {
@@ -224,7 +224,7 @@ export default function Chat() {
   return (
     <View style={{ flex: 1 }}>
       <Image
-        source={backdropImageMap[3]}
+        source={{ uri: chatInfo.url }}
         style={{
           position: 'absolute',
           width: 44,
@@ -249,7 +249,7 @@ export default function Chat() {
           zIndex: 106,
         }}
       >
-        Mariooo
+        {chatInfo.name}
       </Text>
       <Canvas
         style={{

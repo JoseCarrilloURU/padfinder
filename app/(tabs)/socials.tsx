@@ -82,7 +82,7 @@ export interface ResponseChat {
 export default function Socials() {
   const [chats, setChats] = useState<Partner[]>([]);
   const { user, token } = useAuth();
-  const { setChatId } = useChat();
+  const { setChatId, setChatInfo } = useChat();
 
   const { width, height } = useWindowDimensions();
   const appHeight = height + 30;
@@ -93,9 +93,10 @@ export default function Socials() {
     return [color1, color2];
   }, []);
 
-  const handleChatPress = (chat_id: string) => {
+  const handleChatPress = (chat_id: string, name: string, url: string) => {
     console.log('Chat Pressed', chat_id);
     setChatId(chat_id);
+    setChatInfo({ name, url });
     router.push('/chat');
   };
 
@@ -144,14 +145,14 @@ export default function Socials() {
     imageUrl,
   }) => (
     <View style={socialstyles.itemContainer}>
-      <Pressable onPress={() => handleChatPress(chat_id)}>
+      <Pressable onPress={() => handleChatPress(chat_id, name, imageUrl)}>
         <BlurView
           intensity={95}
           tint="prominent"
           style={socialstyles.blurcard}
         />
         <Image
-          source={{ uri: imageUrl, headers: getHeaders() }}
+          source={{ uri: imageUrl }}
           style={socialstyles.itemimage}
         />
         <Text
