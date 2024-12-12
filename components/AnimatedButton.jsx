@@ -21,11 +21,11 @@ const AnimatedButton = ({ onPress, source, style, disabled }) => {
       disabled={disabled}
       style={{
         position: "absolute",
-        zIndex: 50,
+        zIndex: 200,
         borderColor: "black",
-        borderWidth: 0,
-        width: 0,
-        height: 0,
+        borderWidth: 1,
+        width: "auto",
+        height: "auto",
       }}
     >
       <MotiImage

@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import AnimatedButton from "@/components/AnimatedButton";
-import { AnimatePresence } from "moti";
 
 interface HeaderProps {
   originTab: number;
